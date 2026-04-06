@@ -105,17 +105,18 @@ void MenuPridejPolozku (t_zaznamy databaze, int pozice, int *recnum) //pozice za
 
  if (((*recnum)==0)||((pozice+1)==(*recnum)))
      {
-        databaze[pozice]=PridejPolozku(nazev,album,zanr);
-        *recnum++;
+        databaze[*recnum]=PridejPolozku(nazev,album,zanr);
+        *recnum +=1;
       }
 
  else  //pridavam doprostred pole
  {
-     for (int i=(*recnum);i>(pozice+1);i--)
+     for (int i=(*recnum);i>=(pozice+1);i--)
      {
-
+         databaze[i]=databaze[i-1];
          }
-
+     databaze[pozice]=PridejPolozku(nazev,album,zanr);
+     *recnum +=1;
  }
 
 
