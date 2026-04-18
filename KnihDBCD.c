@@ -5,6 +5,30 @@
 
 #include "Knihdbcd.h"
 
+#define MAXDBSIZE 50
+
+t_album* PridejPolozku (char *kapela, char *album, t_zanry zanr);
+
+int loadDB(t_zaznamy databaze,int *pocet) {
+    FILE *f = NULL;
+    f = fopen("DB.txt","r");
+    t_album buffer;
+    do {
+        fscanf(f,"%[^|] |%d |%[^\n]\n",buffer.skupina,&buffer.zanr,buffer.album);
+        databaze[(*pocet)++]=PridejPolozku(buffer.skupina,buffer.album,buffer.zanr);
+    }while(!feof(f)&&(*pocet<=MAXDBSIZE));
+    fclose(f);
+    return 0;
+}
+int saveDB(t_zaznamy DB,int *pocet) {
+    FILE *f = fopen("DB.txt","w");
+    for(int i=0; i<*pocet;i++) {
+        fprintf(f,"%s |%d |%s\n",DB[i]->skupina,DB[i]->zanr,DB[i]->album);
+    }
+    fclose(f);
+    return 0;
+}
+
 t_akce vyber() //vraci enumerativni typ moznosti klaves vyberu akci
 
 {
@@ -39,11 +63,11 @@ else
     fflush(stdin);
 }
 
-void VypisPolozku (t_album *pol)
+void VypisPolozku (t_album *pol, int pozice)
 {
     if (pol)
     {
-    printf ("\n AKTUALNI POLOZKA\n");
+    printf ("\n AKTUALNI POLOZKA: %d\n",pozice+1);
     printf (" Skupina: %s\n",pol->skupina);
     printf (" Album: %s\n",pol->album);
     switch (pol->zanr)
@@ -60,7 +84,7 @@ void VypisPolozku (t_album *pol)
 t_album* PridejPolozku (char *kapela, char *album, t_zanry zanr)  //vraci ukazatel na novou polozku
 {
     t_album *ptr;
-    ptr=malloc(sizeof(t_album));
+    ptr=(t_album*)malloc(sizeof(t_album));
     strcpy(ptr->skupina,kapela);
     strcpy(ptr->album,album);
     ptr->zanr=zanr;
