@@ -5,7 +5,6 @@
 
 #include "Knihdbcd.h"
 
-#define MAXDBSIZE 50
 
 t_album* PridejPolozku (char *kapela, char *album, t_zanry zanr);
 
