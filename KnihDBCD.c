@@ -5,8 +5,14 @@
 
 #include "Knihdbcd.h"
 
-
 t_album* PridejPolozku (char *kapela, char *album, t_zanry zanr);
+
+t_album* listStart=NULL;
+t_album* last;
+t_album* actual;
+
+
+
 
 int loadDB(t_zaznamy databaze,int *pocet) {
     FILE *f = NULL;
@@ -14,15 +20,26 @@ int loadDB(t_zaznamy databaze,int *pocet) {
     t_album buffer;
     do {
         fscanf(f,"%[^|] |%d |%[^\n]\n",buffer.skupina,&buffer.zanr,buffer.album);
-        databaze[(*pocet)++]=PridejPolozku(buffer.skupina,buffer.album,buffer.zanr);
+        actual=PridejPolozku(buffer.skupina,buffer.album,buffer.zanr);
+        if(listStart==NULL) {
+            listStart=actual;
+            last=actual;
+        }else {
+
+            last->nextptr=actual;
+        }
+        last=actual;
+        *pocet+=1;
     }while(!feof(f)&&(*pocet<=MAXDBSIZE));
     fclose(f);
     return 0;
 }
 int saveDB(t_zaznamy DB,int *pocet) {
     FILE *f = fopen("DB.txt","w");
+    actual=listStart;
     for(int i=0; i<*pocet;i++) {
-        fprintf(f,"%s |%d |%s\n",DB[i]->skupina,DB[i]->zanr,DB[i]->album);
+        fprintf(f,"%s |%d |%s\n",actual->skupina,actual->zanr,actual->album);
+        actual=actual->nextptr;
     }
     fclose(f);
     return 0;
@@ -62,23 +79,22 @@ else
     fflush(stdin);
 }
 
-void VypisPolozku (t_album *pol, int pozice)
+void VypisPolozku (int pozice)
 {
-    if (pol)
-    {
+    t_album* zobr=listStart;
+    for(int i=0;i<pozice;i++){zobr=zobr->nextptr;}
     printf ("\n AKTUALNI POLOZKA: %d\n",pozice+1);
-    printf (" Skupina: %s\n",pol->skupina);
-    printf (" Album: %s\n",pol->album);
-    switch (pol->zanr)
-    {
-    case jazz: printf (" Zanr: jazz\n" ); break;
-    case pop: printf (" Zanr: pop\n" ); break;
-    case klasika: printf (" Zanr: klasika\n" ); break;
-    case rock: printf (" Zanr: rock\n" ); break;
+    printf (" Skupina: %s\n",zobr->skupina);
+    printf (" Album: %s\n",zobr->album);
+    switch (zobr->zanr){
+        case jazz: printf (" Zanr: jazz\n" ); break;
+        case pop: printf (" Zanr: pop\n" ); break;
+        case klasika: printf (" Zanr: klasika\n" ); break;
+        case rock: printf (" Zanr: rock\n" ); break;
     }
-    }
-    else printf ("Polozka neni obsazena zaznamem\n");
 }
+
+
 
 t_album* PridejPolozku (char *kapela, char *album, t_zanry zanr)  //vraci ukazatel na novou polozku
 {
@@ -87,9 +103,11 @@ t_album* PridejPolozku (char *kapela, char *album, t_zanry zanr)  //vraci ukazat
     strcpy(ptr->skupina,kapela);
     strcpy(ptr->album,album);
     ptr->zanr=zanr;
+    ptr->nextptr=NULL;
     return ptr;
-  //### ..... doplnte funkci pro vytvoreni dynamicky alokovane polozky a a jeji naplneni
 }
+
+
 void MenuPridejPolozku (t_zaznamy databaze, int pozice, int *recnum) //pozice za aktualni polozkou, tzn. kam se ma pridat zaznam
 {
     char nazev[50],album[50];
@@ -123,22 +141,34 @@ void MenuPridejPolozku (t_zaznamy databaze, int pozice, int *recnum) //pozice za
     while (key!=enter);
 
 
- // VARIANTA vlozit zaznam do prazdne databaze//
- // VARIANTA vlozit zaznam na konec databaze //
 
- if (((*recnum)==0)||((pozice+1)==(*recnum)))
-     {
-        databaze[*recnum]=PridejPolozku(nazev,album,zanr);
-        *recnum +=1;
-      }
+
+    // VARIANTA vlozit zaznam do prazdne databaze//
+ if (((*recnum)==0)){
+     listStart=PridejPolozku(nazev,album,zanr);
+     *recnum +=1;
+     // VARIANTA vlozit zaznam na konec databaze //
+ }else if((pozice+1)==(*recnum)) {
+     t_album* last=listStart;
+     t_album* actual=last->nextptr;
+     do{
+         last=actual;
+         actual=last->nextptr;
+     }while(actual!=NULL);
+     actual->nextptr=PridejPolozku(nazev,album,zanr);
+ }
 
  else  //pridavam doprostred pole
  {
-     for (int i=(*recnum);i>=(pozice+1);i--)
-     {
-         databaze[i]=databaze[i-1];
-         }
-     databaze[pozice]=PridejPolozku(nazev,album,zanr);
+     pozice++;
+     actual=listStart;
+     do {
+         last=actual;
+         actual=last->nextptr;
+         pozice--;
+     }while(pozice!=0);
+     last->nextptr=PridejPolozku(nazev,album,zanr);
+     (last->nextptr)->nextptr=actual;
      *recnum +=1;
  }
 
@@ -147,16 +177,15 @@ void MenuPridejPolozku (t_zaznamy databaze, int pozice, int *recnum) //pozice za
 
 void SmazDB (t_zaznamy databaze, int *recnum)
 {
-if ((*recnum) > 0)
-{
-do
-    {
-    (*recnum)--;
-    free(databaze[(*recnum)]);
+    if ((*recnum) > 0){
+        actual=listStart;
+        do{
+            actual=actual->nextptr;
+            free(actual);
+        }while (actual->nextptr!=NULL);
     }
-while ((*recnum));
 }
-}
+
 void TiskVyber()
 {
 printf ("------------------------------------------------------------------------------\n");

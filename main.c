@@ -32,7 +32,7 @@ int main()
                 system ("cls");
                 TiskHlavicka();
                 --AktualniPozice;
-                VypisPolozku(databaze[AktualniPozice],AktualniPozice);
+                VypisPolozku(AktualniPozice);
                 TiskVyber();
                 }
          break;
@@ -42,16 +42,16 @@ int main()
             MenuPridejPolozku(databaze,AktualniPozice,&PocetPolozek);
             system ("cls");
             TiskHlavicka();
-            VypisPolozku(databaze[AktualniPozice],AktualniPozice);
+            VypisPolozku(AktualniPozice);
             TiskVyber();
             break;
      case doprava:
-          if ((AktualniPozice<=(PocetPolozek-1))&&(PocetPolozek>0))
+          if ((AktualniPozice<(PocetPolozek-1))&&(PocetPolozek>0))
             {
             system ("cls");
             TiskHlavicka();
             ++AktualniPozice;
-            VypisPolozku(databaze[AktualniPozice],AktualniPozice);
+            VypisPolozku(AktualniPozice);
             TiskVyber();
             }
         break;

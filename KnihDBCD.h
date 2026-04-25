@@ -7,16 +7,20 @@
 typedef enum  {nahoru,dolu,doprava,doleva,pridat,smazat,odejit,enter} t_akce; //výètový typ pro ovládání akcí rozhraní konzoly
 typedef enum {jazz,klasika,pop,rock} t_zanry;//### výètový typ t_zanry
 
-typedef struct{
+
+
+typedef struct t_album{
    char skupina[50];
    t_zanry zanr;
    char album[50];
+   struct t_album *nextptr;
 } t_album;
+
 
 typedef  t_album* t_zaznamy[MAXDBSIZE];//### ......  definice datoveho typu t_zaznamy;
 
 t_akce vyber();
-void VypisPolozku (t_album *pol, int pozice);
+void VypisPolozku (int pozice);
 void MenuPridejPolozku (t_zaznamy databaze, int pozice, int *recnum);
 void SmazDB (t_zaznamy databaze, int *recnum);
 void TiskVyber();
